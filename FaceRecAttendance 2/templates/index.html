@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Face Recognition Attendance System</title>
+</head>
+<body style="background-image: url('/static/background.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+
+    <div class="container">
+        <h1>Welcome to Face-Based Attendance System</h1>
+
+        <div>
+            <h2>Mark Attendance</h2>
+            <input type="text" id="studentNameInput" placeholder="Enter Roll Number" required>
+            <div>
+                <button id="captureBtn">Capture Attendance</button>
+            </div>
+            <div id="alert" style="display:none;"></div>
+        </div>
+
+        <div>
+            <h2>Upload Student Image</h2>
+            <input type="file" id="fileInput" accept="image/*">
+            <input type="text" id="rollInput" placeholder="Enter Roll Number" required>
+            <button id="uploadBtn">Upload</button>
+            <div id="uploadAlert" style="display:none;"></div>
+        </div>
+
+        <div>
+            <h2>Live Video Feed</h2>
+            <img src="{{ url_for('video_feed') }}" id="video" alt="Video feed">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("captureBtn").addEventListener("click", function () {
+            const rollNumber = document.getElementById("studentNameInput").value;
+
+            if (!rollNumber) {
+                alert("Please enter your Roll Number.");
+                return;
+            }
+
+            fetch("/capture", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ rollNumber: rollNumber }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                document.getElementById("alert").innerText = data.message;
+                document.getElementById("alert").style.display = "block";
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+            });
+        });
+
+        document.getElementById("uploadBtn").addEventListener("click", function () {
+            const fileInput = document.getElementById("fileInput");
+            const rollInput = document.getElementById("rollInput");
+
+            if (!fileInput.files.length || !rollInput.value) {
+                alert("Please select a file and enter the Roll Number.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            formData.append("rollNumber", rollInput.value);
+
+            fetch("/upload", {
+                method: "POST",
+                body: formData,
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                document.getElementById("uploadAlert").innerText = data.message;
+                document.getElementById("uploadAlert").style.display = "block";
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+            });
+        });
+    </script>
+</body>
+</html>
